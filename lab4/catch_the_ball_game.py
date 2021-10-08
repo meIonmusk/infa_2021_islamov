@@ -17,17 +17,30 @@ COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
 
 def new_ball():
+    """
+    создает новый шарик случайного радиуса случайного цвета в случайном месте
+
+    :return: none
+    """
     global x, y, r
-    x = randint(100,700)
-    y = randint(100,500)
-    r = randint(30,50)
+    x = randint(100, 700)
+    y = randint(100, 500)
+    r = randint(30, 50)
     color = COLORS[randint(0, 5)]
     circle(screen, color, (x, y), r)
 
+
 def click(event):
+    """
+    обрабатывает щелчок мыши: распознает словил ли пользователь шарик
+
+    :param event: event
+    :return: none
+    """
     print(x, y, r)
     if abs(event.x - x) < r and abs(event.y - y) < r:
         print('yeah!')
+
 
 pygame.display.update()
 clock = pygame.time.Clock()
