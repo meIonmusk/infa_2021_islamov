@@ -26,8 +26,8 @@ COLORS = [RED, RASPBERRY, MAGENTA, VIOLET, BLUE, OCEAN,
           CYAN, TURQUOISE, GREEN, SPRING, YELLOW, ORANGE]
 point = 0
 balls_number = 5
-
 pool = []
+level = 3
 
 
 def new_ball():
@@ -39,9 +39,9 @@ def new_ball():
     global pool
     x = randint(WIDTH//10, WIDTH//2)
     y = randint(HEIGHT//10, HEIGHT//2)
-    r = randint(30, 50)
-    v_x = randint(-5, 5)
-    v_y = randint(-5, 5)
+    r = randint(30, 50) / level
+    v_x = randint(-3, 3) * level
+    v_y = randint(-3, 3) * level
     color = COLORS[randint(0, 11)]
     pool.append([x, y, r, v_x, v_y, color])
 
@@ -82,10 +82,11 @@ def bump_balls():
         for n in range(balls_number):
             if n != p:
                 ball_2 = pool[n]
+                m = ball_1[2] / ball_2[2]
                 if ((ball_1[0]-ball_2[0])**2 + (ball_1[1]-ball_2[1])**2
                         <= (ball_1[2]+ball_2[2])**2):
-                    ball_1[3], ball_2[3] = ball_2[3], ball_1[3]
-                    ball_1[4], ball_2[4] = ball_2[4], ball_1[4]
+                    ball_1[3], ball_2[3] = m*ball_2[3], ball_1[3]/m
+                    ball_1[4], ball_2[4] = m*ball_2[4], ball_1[4]/m
                     ball_1[0] += ball_1[3]
                     ball_1[1] += ball_1[4]
                     ball_2[0] += ball_2[3]
@@ -137,7 +138,7 @@ while not finished:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
-            print('вы набрали', point, point_version(point) + '!')
+            print('Вы набрали', point, point_version(point) + '! время:', pygame.time.get_ticks()/1000, 'с')
         elif event.type == pygame.MOUSEBUTTONDOWN:
             print('Click!')
             click(event)
