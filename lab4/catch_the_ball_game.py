@@ -8,13 +8,20 @@ FPS = 30
 screen = pygame.display.set_mode((1200, 900))
 
 RED = (255, 0, 0)
-BLUE = (0, 0, 255)
-YELLOW = (255, 255, 0)
-GREEN = (0, 255, 0)
+RASPBERRY = (255, 0, 125)
 MAGENTA = (255, 0, 255)
+VIOLET = (125, 0, 255)
+BLUE = (0, 0, 255)
+OCEAN = (0, 125, 255)
 CYAN = (0, 255, 255)
+TURQUOISE = (0, 255, 125)
+GREEN = (0, 255, 0)
+SPRING = (125, 255, 0)
+YELLOW = (255, 255, 0)
+ORANGE = (255, 125, 0)
 BLACK = (0, 0, 0)
-COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
+COLORS = [RED, RASPBERRY, MAGENTA, VIOLET, BLUE, OCEAN,
+          CYAN, TURQUOISE, GREEN, SPRING, YELLOW, ORANGE]
 point = 0
 balls_number = 5
 
@@ -34,8 +41,7 @@ def new_ball():
     r = randint(30, 50)
     v_x = randint(-5, 5)
     v_y = randint(-5, 5)
-    color = COLORS[randint(0, 5)]
-
+    color = COLORS[randint(0, 11)]
     pool.append([x, y, r, v_x, v_y, color])
 
 
