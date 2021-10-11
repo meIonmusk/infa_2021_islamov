@@ -72,6 +72,26 @@ def bump_border(ball):
         ball[1] += ball[4]
 
 
+def bump_balls():
+    """
+    Функция отталкивает шарики в случае столкновения
+    :return: none
+    """
+    for p in range(balls_number):
+        ball_1 = pool[p]
+        for n in range(balls_number):
+            if n != p:
+                ball_2 = pool[n]
+                if ((ball_1[0]-ball_2[0])**2 + (ball_1[1]-ball_2[1])**2
+                        <= (ball_1[2]+ball_2[2])**2):
+                    ball_1[3], ball_2[3] = ball_2[3], ball_1[3]
+                    ball_1[4], ball_2[4] = ball_2[4], ball_1[4]
+                    ball_1[0] += ball_1[3]
+                    ball_1[1] += ball_1[4]
+                    ball_2[0] += ball_2[3]
+                    ball_2[1] += ball_2[4]
+
+
 def click(event_):
     """
     обрабатывает щелчок мыши: распознает словил ли пользователь шарик
@@ -124,6 +144,7 @@ while not finished:
     draw_balls()
     for k in range(balls_number):
         bump_border(pool[k])
+    bump_balls()
     pygame.display.update()
     screen.fill(BLACK)
 
