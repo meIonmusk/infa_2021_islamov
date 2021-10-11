@@ -5,7 +5,9 @@ from random import randint
 pygame.init()
 
 FPS = 30
-screen = pygame.display.set_mode((1200, 900))
+WIDTH = 1200
+HEIGHT = 700
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 RED = (255, 0, 0)
 RASPBERRY = (255, 0, 125)
@@ -34,10 +36,9 @@ def new_ball():
 
     :return: none
     """
-
     global pool
-    x = randint(100, 700)
-    y = randint(100, 500)
+    x = randint(WIDTH//10, WIDTH//2)
+    y = randint(HEIGHT//10, HEIGHT//2)
     r = randint(30, 50)
     v_x = randint(-5, 5)
     v_y = randint(-5, 5)
@@ -57,6 +58,20 @@ def draw_balls():
         circle(screen, pool[t][5], (pool[t][0], pool[t][1]), pool[t][2])
 
 
+def bump_border(ball):
+    """
+    Функция отталкивает шарик от стен в случае столкновения
+    :param ball: шарик, столкновение котрого проверяет функция
+    :return: none
+    """
+    if abs(ball[0] - WIDTH/2) > WIDTH/2-ball[2]:
+        ball[3] = -ball[3]
+        ball[0] += ball[3]
+    if abs(ball[1] - HEIGHT/2) > HEIGHT/2-ball[2]:
+        ball[4] = -ball[4]
+        ball[1] += ball[4]
+
+
 def click(event_):
     """
     обрабатывает щелчок мыши: распознает словил ли пользователь шарик
@@ -64,7 +79,6 @@ def click(event_):
     :param event_: event
     :return: none
     """
-
     global point, pool
     for j in range(balls_number):
         r = pool[j][2]
@@ -108,7 +122,8 @@ while not finished:
             print('Click!')
             click(event)
     draw_balls()
-
+    for k in range(balls_number):
+        bump_border(pool[k])
     pygame.display.update()
     screen.fill(BLACK)
 
