@@ -4,7 +4,7 @@ from random import randint
 
 pygame.init()
 
-FPS = 30
+FPS = 60
 WIDTH = 1200
 HEIGHT = 700
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -25,12 +25,14 @@ BLACK = (0, 0, 0)
 COLORS = [RED, RASPBERRY, MAGENTA, VIOLET, BLUE, OCEAN,
           CYAN, TURQUOISE, GREEN, SPRING, YELLOW, ORANGE]
 point = 0
-balls_number = 10
+balls_number = 30
 pool = []
 new_elements = []
 level = 3
 min_level = 3
 special_score = 10
+v_max = 3
+font_size = 36
 
 
 def new_ball():
@@ -40,11 +42,11 @@ def new_ball():
     :return: none
     """
     global pool
-    x = randint(WIDTH // 10, WIDTH // 2)
-    y = randint(HEIGHT // 10, HEIGHT // 2)
+    x = randint(WIDTH//10, WIDTH//2)
+    y = randint(HEIGHT//10, HEIGHT//2)
     r = randint(30, 50) / level
-    v_x = randint(-3, 3) * level
-    v_y = randint(-3, 3) * level
+    v_x = randint(-v_max, v_max) * level
+    v_y = randint(-v_max, v_max) * level
     color = COLORS[randint(0, 11)]
     pool.append([x, y, r, v_x, v_y, color])
 
@@ -94,8 +96,8 @@ def draw_new_elements():
     """
     global new_elements
     for t in range(len(new_elements)):
-        new_elements[t][0] += randint(-5, 5) * level
-        new_elements[t][1] += randint(-5, 5) * level
+        new_elements[t][0] += randint(-v_max, v_max) * 2*level
+        new_elements[t][1] += randint(-v_max, v_max) * 2*level
         r = new_elements[t][2]
         screen.blit(pygame.transform.scale(star(), (r, r)), (new_elements[t][0], new_elements[t][1]))
         pygame.display.update()
@@ -108,10 +110,10 @@ def bump_border(ball):
     :param ball: шарик, столкновение котрого проверяет функция
     :return: none
     """
-    if abs(ball[0] - WIDTH / 2) > WIDTH / 2 - ball[2]:
+    if abs(ball[0] - WIDTH/2) > WIDTH/2-ball[2]:
         ball[3] = -ball[3]
         ball[0] += ball[3]
-    if abs(ball[1] - HEIGHT / 2) > HEIGHT / 2 - ball[2]:
+    if abs(ball[1] - HEIGHT/2) > HEIGHT/2-ball[2]:
         ball[4] = -ball[4]
         ball[1] += ball[4]
 
@@ -128,10 +130,10 @@ def bump_balls():
             if n != p:
                 ball_2 = pool[n]
                 m = ball_1[2] / ball_2[2]
-                if ((ball_1[0] - ball_2[0]) ** 2 + (ball_1[1] - ball_2[1]) ** 2
-                        <= (ball_1[2] + ball_2[2]) ** 2):
-                    ball_1[3], ball_2[3] = m * ball_2[3], ball_1[3] / m
-                    ball_1[4], ball_2[4] = m * ball_2[4], ball_1[4] / m
+                if ((ball_1[0]-ball_2[0])**2 + (ball_1[1]-ball_2[1])**2
+                        <= (ball_1[2]+ball_2[2])**2):
+                    ball_1[3], ball_2[3] = m*ball_2[3], ball_1[3]/m
+                    ball_1[4], ball_2[4] = m*ball_2[4], ball_1[4]/m
                     ball_1[0] += ball_1[3]
                     ball_1[1] += ball_1[4]
                     ball_2[0] += ball_2[3]
@@ -149,14 +151,14 @@ def click(event_):
     for j in range(balls_number):
         r = pool[j][2]
         if (event_.pos[0] - pool[j][0]) ** 2 + (event_.pos[1] - pool[j][1]) ** 2 <= r ** 2:
-            print('yeah!')
+            print('pop!')
             point += 1
             pool.pop(j)
             new_ball()
     for j in range(len(new_elements)):
         r = new_elements[j][2]
         if (event_.pos[0] - new_elements[j][0]) ** 2 + (event_.pos[1] - new_elements[j][1]) ** 2 <= r ** 2:
-            print('YEAH!')
+            print('POP!')
             point += 1
             new_elements.pop(j)
             new_element()
@@ -179,33 +181,41 @@ def point_version(point_):
     return version
 
 
+name = input()
+
 for i in range(balls_number):
     new_ball()
 
 pygame.display.update()
 clock = pygame.time.Clock()
 finished = False
+entered = False
+
+font = pygame.font.SysFont('Roboto', font_size)
 
 while not finished:
     clock.tick(FPS)
+    pygame.key.start_text_input()
+    name = pygame.TEXTINPUT
+    pygame.key.stop_text_input()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
-            print('Вы набрали', point, point_version(point) + '! время:', pygame.time.get_ticks() / 1000, 'с')
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            print('Click!')
-            click(event)
+            print('Вы набрали', point, point_version(point) + '! время:', pygame.time.get_ticks()/1000, 'с')
+
+    text = font.render('SCORE: ' + str(point), False, RED)
+    screen.blit(text, (WIDTH-text.get_width(), 0))
     draw_balls()
     for k in range(balls_number):
         bump_border(pool[k])
     bump_balls()
     if level >= min_level:
-        if randint(0, 500 // level) == 500 // level:
+        if randint(0, 500//level) == 500//level:
             new_element()
     draw_new_elements()
     for k in range(len(new_elements)):
-        if (abs(new_elements[k][0] - WIDTH / 2) > WIDTH / 2) or \
-                (abs(new_elements[k][1] - HEIGHT / 2) > HEIGHT / 2):
+        if (abs(new_elements[k][0]-WIDTH/2) > WIDTH/2) or \
+                (abs(new_elements[k][1]-HEIGHT/2) > HEIGHT/2):
             new_elements.pop(k)
             new_element()
     pygame.display.update()
