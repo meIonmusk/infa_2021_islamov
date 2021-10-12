@@ -25,9 +25,12 @@ BLACK = (0, 0, 0)
 COLORS = [RED, RASPBERRY, MAGENTA, VIOLET, BLUE, OCEAN,
           CYAN, TURQUOISE, GREEN, SPRING, YELLOW, ORANGE]
 point = 0
-balls_number = 5
+balls_number = 10
 pool = []
+new_elements = []
 level = 3
+min_level = 3
+special_score = 10
 
 
 def new_ball():
@@ -37,8 +40,8 @@ def new_ball():
     :return: none
     """
     global pool
-    x = randint(WIDTH//10, WIDTH//2)
-    y = randint(HEIGHT//10, HEIGHT//2)
+    x = randint(WIDTH // 10, WIDTH // 2)
+    y = randint(HEIGHT // 10, HEIGHT // 2)
     r = randint(30, 50) / level
     v_x = randint(-3, 3) * level
     v_y = randint(-3, 3) * level
@@ -46,9 +49,23 @@ def new_ball():
     pool.append([x, y, r, v_x, v_y, color])
 
 
+def new_element():
+    """
+    создает новый элемент ссо случайными параметрами и сохраняет его в список
+
+    :return: none
+    """
+    global new_elements
+    x = randint(WIDTH // 10, WIDTH // 2)
+    y = randint(HEIGHT // 10, HEIGHT // 2)
+    r = randint(50, 70) // level
+    new_elements.append([x, y, r])
+
+
 def draw_balls():
     """
     Функция рисует заданное количество шариков
+
     :return: none
     """
     global pool
@@ -58,16 +75,43 @@ def draw_balls():
         circle(screen, pool[t][5], (pool[t][0], pool[t][1]), pool[t][2])
 
 
+def star():
+    """
+    рисует на поверхности surf звезду случайного размера и цвета
+    :return: surf
+    """
+    surf = pygame.Surface((10, 10))
+    pygame.draw.polygon(surf, COLORS[randint(0, 11)],
+                        ((5, 0), (9, 10), (0, 3), (10, 3), (1, 10)))
+    return surf
+
+
+def draw_new_elements():
+    """
+    перемещает ноыве элементы и рисует их на экране
+
+    :return: none
+    """
+    global new_elements
+    for t in range(len(new_elements)):
+        new_elements[t][0] += randint(-5, 5) * level
+        new_elements[t][1] += randint(-5, 5) * level
+        r = new_elements[t][2]
+        screen.blit(pygame.transform.scale(star(), (r, r)), (new_elements[t][0], new_elements[t][1]))
+        pygame.display.update()
+
+
 def bump_border(ball):
     """
     Функция отталкивает шарик от стен в случае столкновения
+
     :param ball: шарик, столкновение котрого проверяет функция
     :return: none
     """
-    if abs(ball[0] - WIDTH/2) > WIDTH/2-ball[2]:
+    if abs(ball[0] - WIDTH / 2) > WIDTH / 2 - ball[2]:
         ball[3] = -ball[3]
         ball[0] += ball[3]
-    if abs(ball[1] - HEIGHT/2) > HEIGHT/2-ball[2]:
+    if abs(ball[1] - HEIGHT / 2) > HEIGHT / 2 - ball[2]:
         ball[4] = -ball[4]
         ball[1] += ball[4]
 
@@ -75,6 +119,7 @@ def bump_border(ball):
 def bump_balls():
     """
     Функция отталкивает шарики в случае столкновения
+
     :return: none
     """
     for p in range(balls_number):
@@ -83,10 +128,10 @@ def bump_balls():
             if n != p:
                 ball_2 = pool[n]
                 m = ball_1[2] / ball_2[2]
-                if ((ball_1[0]-ball_2[0])**2 + (ball_1[1]-ball_2[1])**2
-                        <= (ball_1[2]+ball_2[2])**2):
-                    ball_1[3], ball_2[3] = m*ball_2[3], ball_1[3]/m
-                    ball_1[4], ball_2[4] = m*ball_2[4], ball_1[4]/m
+                if ((ball_1[0] - ball_2[0]) ** 2 + (ball_1[1] - ball_2[1]) ** 2
+                        <= (ball_1[2] + ball_2[2]) ** 2):
+                    ball_1[3], ball_2[3] = m * ball_2[3], ball_1[3] / m
+                    ball_1[4], ball_2[4] = m * ball_2[4], ball_1[4] / m
                     ball_1[0] += ball_1[3]
                     ball_1[1] += ball_1[4]
                     ball_2[0] += ball_2[3]
@@ -95,12 +140,12 @@ def bump_balls():
 
 def click(event_):
     """
-    обрабатывает щелчок мыши: распознает словил ли пользователь шарик
+    обрабатывает щелчок мыши: распознает словил ли пользователь шарик или новый элемент
 
     :param event_: event
     :return: none
     """
-    global point, pool
+    global point, pool, new_elements
     for j in range(balls_number):
         r = pool[j][2]
         if (event_.pos[0] - pool[j][0]) ** 2 + (event_.pos[1] - pool[j][1]) ** 2 <= r ** 2:
@@ -108,6 +153,14 @@ def click(event_):
             point += 1
             pool.pop(j)
             new_ball()
+    for j in range(len(new_elements)):
+        r = new_elements[j][2]
+        if (event_.pos[0] - new_elements[j][0]) ** 2 + (event_.pos[1] - new_elements[j][1]) ** 2 <= r ** 2:
+            print('YEAH!')
+            point += 1
+            new_elements.pop(j)
+            new_element()
+            point += special_score
 
 
 def point_version(point_):
@@ -138,7 +191,7 @@ while not finished:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
-            print('Вы набрали', point, point_version(point) + '! время:', pygame.time.get_ticks()/1000, 'с')
+            print('Вы набрали', point, point_version(point) + '! время:', pygame.time.get_ticks() / 1000, 'с')
         elif event.type == pygame.MOUSEBUTTONDOWN:
             print('Click!')
             click(event)
@@ -146,6 +199,15 @@ while not finished:
     for k in range(balls_number):
         bump_border(pool[k])
     bump_balls()
+    if level >= min_level:
+        if randint(0, 500 // level) == 500 // level:
+            new_element()
+    draw_new_elements()
+    for k in range(len(new_elements)):
+        if (abs(new_elements[k][0] - WIDTH / 2) > WIDTH / 2) or \
+                (abs(new_elements[k][1] - HEIGHT / 2) > HEIGHT / 2):
+            new_elements.pop(k)
+            new_element()
     pygame.display.update()
     screen.fill(BLACK)
 
