@@ -202,7 +202,9 @@ while not finished:
         if event.type == pygame.QUIT:
             finished = True
             print('Вы набрали', point, point_version(point) + '! время:', pygame.time.get_ticks()/1000, 'с')
-
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            print('Click!')
+            click(event)
     text = font.render('SCORE: ' + str(point), False, RED)
     screen.blit(text, (WIDTH-text.get_width(), 0))
     draw_balls()
