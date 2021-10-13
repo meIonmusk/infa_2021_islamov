@@ -28,11 +28,12 @@ point = 0
 balls_number = 30
 pool = []
 new_elements = []
-level = 3
+level = 2
 min_level = 3
 special_score = 10
 v_max = 3
 font_size = 36
+name = ''
 
 
 def new_ball():
@@ -151,14 +152,12 @@ def click(event_):
     for j in range(balls_number):
         r = pool[j][2]
         if (event_.pos[0] - pool[j][0]) ** 2 + (event_.pos[1] - pool[j][1]) ** 2 <= r ** 2:
-            print('pop!')
             point += 1
             pool.pop(j)
             new_ball()
     for j in range(len(new_elements)):
         r = new_elements[j][2]
         if (event_.pos[0] - new_elements[j][0]) ** 2 + (event_.pos[1] - new_elements[j][1]) ** 2 <= r ** 2:
-            print('POP!')
             point += 1
             new_elements.pop(j)
             new_element()
@@ -181,7 +180,24 @@ def point_version(point_):
     return version
 
 
-name = input()
+file = open('TOP Players', 'r')
+players_info = [players.rstrip().split() for players in file.readlines()][1:]
+file.close()
+
+players_info = list(filter(lambda row: len(row) == 4, players_info))
+names = [pl[0] for pl in players_info]
+
+print("Введите ваше имя: ")
+ok = False
+while not ok:
+    name = input()
+    if name in names:
+        print('Имя занято, введите другое: ')
+    elif len(name) > 15:
+        print('Длина имени должна быть не более 15 символов. Введите другое имя: ')
+    else:
+        ok = True
+
 
 for i in range(balls_number):
     new_ball()
@@ -193,18 +209,22 @@ entered = False
 
 font = pygame.font.SysFont('Roboto', font_size)
 
+time = pygame.time.get_ticks()/1000
+
 while not finished:
     clock.tick(FPS)
-    pygame.key.start_text_input()
-    name = pygame.TEXTINPUT
-    pygame.key.stop_text_input()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
-            print('Вы набрали', point, point_version(point) + '! время:', pygame.time.get_ticks()/1000, 'с')
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            print('Click!')
             click(event)
+    if point > 10**22:
+        finished = True
+
+    if finished:
+        time = pygame.time.get_ticks() / 1000 - time
+        print('Вы набрали', point, point_version(point) + '! Время:',
+              round(time, 2), 'с')
     text = font.render('SCORE: ' + str(point), False, RED)
     screen.blit(text, (WIDTH-text.get_width(), 0))
     draw_balls()
@@ -223,4 +243,14 @@ while not finished:
     pygame.display.update()
     screen.fill(BLACK)
 
+players_info.append([name, str(point), str(round(time, 3)), str(level)])
+players_info = sorted(players_info, key=lambda x: x[1])[::-1]
+
+file = open('TOP Players', 'w')
+file.write('Player                  Score                   Time                    Level\n')
+for players in players_info:
+    for i in range(4):
+        file.write(players[i] + ' '*(24 - len(players[i])))
+    file.write('\n')
+file.close()
 pygame.quit()
