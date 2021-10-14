@@ -28,7 +28,7 @@ point = 0
 balls_number = 30
 pool = []
 new_elements = []
-level = 2
+level = 3
 min_level = 3
 special_score = 10
 v_max = 3
@@ -244,7 +244,7 @@ while not finished:
     screen.fill(BLACK)
 
 players_info.append([name, str(point), str(round(time, 3)), str(level)])
-players_info = sorted(players_info, key=lambda x: x[1])[::-1]
+players_info = sorted(players_info, key=lambda x: int(x[1]), reverse=True)
 
 file = open('TOP Players', 'w')
 file.write('Player                  Score                   Time                    Level\n')
