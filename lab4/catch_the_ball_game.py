@@ -25,14 +25,14 @@ BLACK = (0, 0, 0)
 COLORS = [RED, RASPBERRY, MAGENTA, VIOLET, BLUE, OCEAN,
           CYAN, TURQUOISE, GREEN, SPRING, YELLOW, ORANGE]
 point = 0
-balls_number = 30
+balls_number = 30                           # кол-во шаров на экране
 pool = []
 new_elements = []
-level = 3
-min_level = 3
-special_score = 10
-v_max = 3
-font_size = 36
+level = 3                                   # уровень сложности
+min_level = 3                               # уровень, на котором появляются новые элементы
+special_score = 10                          # кол-во очков за новый элемент
+v_max = 3                                   # максимльная скорость шаров на 1 уровне
+font_size = 36                              # размер шрифта подсчета очков на экране
 name = ''
 
 
@@ -54,7 +54,7 @@ def new_ball():
 
 def new_element():
     """
-    создает новый элемент ссо случайными параметрами и сохраняет его в список
+    Функция создает новый элемент ссо случайными параметрами и сохраняет его в список
 
     :return: none
     """
@@ -80,7 +80,8 @@ def draw_balls():
 
 def star():
     """
-    рисует на поверхности surf звезду случайного размера и цвета
+    Функция рисует на поверхности surf звезду случайного размера и цвета
+
     :return: surf
     """
     surf = pygame.Surface((10, 10))
@@ -91,7 +92,7 @@ def star():
 
 def draw_new_elements():
     """
-    перемещает ноыве элементы и рисует их на экране
+    Функция перемещает ноыве элементы и рисует их на экране
 
     :return: none
     """
@@ -106,7 +107,7 @@ def draw_new_elements():
 
 def bump_border(ball):
     """
-    Функция отталкивает шарик от стен в случае столкновения
+    Функция отталкивает шарики от стен в случае столкновения
 
     :param ball: шарик, столкновение котрого проверяет функция
     :return: none
@@ -198,7 +199,6 @@ while not ok:
     else:
         ok = True
 
-
 for i in range(balls_number):
     new_ball()
 
@@ -209,7 +209,7 @@ entered = False
 
 font = pygame.font.SysFont('Roboto', font_size)
 
-time = pygame.time.get_ticks()/1000
+time = pygame.time.get_ticks()/1000                             # время начала игры
 
 while not finished:
     clock.tick(FPS)
@@ -218,28 +218,33 @@ while not finished:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             click(event)
-    if point > 10**22:
+    if point > 10**10:
         finished = True
 
     if finished:
         time = pygame.time.get_ticks() / 1000 - time
         print('Вы набрали', point, point_version(point) + '! Время:',
               round(time, 2), 'с')
+
     text = font.render('SCORE: ' + str(point), False, RED)
     screen.blit(text, (WIDTH-text.get_width(), 0))
+
     draw_balls()
     for k in range(balls_number):
         bump_border(pool[k])
     bump_balls()
+
     if level >= min_level:
         if randint(0, 500//level) == 500//level:
             new_element()
     draw_new_elements()
+
     for k in range(len(new_elements)):
         if (abs(new_elements[k][0]-WIDTH/2) > WIDTH/2) or \
                 (abs(new_elements[k][1]-HEIGHT/2) > HEIGHT/2):
             new_elements.pop(k)
             new_element()
+
     pygame.display.update()
     screen.fill(BLACK)
 
