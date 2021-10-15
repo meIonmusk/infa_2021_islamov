@@ -34,7 +34,7 @@ special_score = 10                          # кол-во очков за нов
 v_max = 3                                   # максимльная скорость шаров на 1 уровне
 font_size = 36                              # размер шрифта подсчета очков на экране
 name = ''
-lives = 3                                   # количество жизней
+lives = 10                                  # количество жизней
 
 
 def new_ball():
@@ -50,7 +50,8 @@ def new_ball():
     v_x = randint(-v_max, v_max) * level
     v_y = randint(-v_max, v_max) * level
     color = COLORS[randint(0, 11)]
-    pool.append([x, y, r, v_x, v_y, color])
+    health = randint(1, round(r/5))
+    pool.append([x, y, r, v_x, v_y, color, health])
 
 
 def new_element():
@@ -155,9 +156,11 @@ def click(event_):
     for j in range(balls_number):
         r = pool[j][2]
         if (event_.pos[0] - pool[j][0]) ** 2 + (event_.pos[1] - pool[j][1]) ** 2 <= r ** 2:
-            point += 1
-            pool.pop(j)
-            new_ball()
+            pool[j][6] -= 1
+            if pool[j][6] == 0:
+                point += round(pool[j][2]/5)
+                pool.pop(j)
+                new_ball()
             caught = True
     for j in range(len(new_elements)):
         r = new_elements[j][2]
