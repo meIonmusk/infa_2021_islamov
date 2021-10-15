@@ -28,12 +28,13 @@ point = 0
 balls_number = 30                           # кол-во шаров на экране
 pool = []
 new_elements = []
-level = 3                                   # уровень сложности
-min_level = 3                               # уровень, на котором появляются новые элементы
+level = 2                                   # уровень сложности
+min_level = 2                               # уровень, на котором появляются новые элементы
 special_score = 10                          # кол-во очков за новый элемент
 v_max = 3                                   # максимльная скорость шаров на 1 уровне
 font_size = 36                              # размер шрифта подсчета очков на экране
 name = ''
+lives = 3                                   # количество жизней
 
 
 def new_ball():
@@ -149,13 +150,15 @@ def click(event_):
     :param event_: event
     :return: none
     """
-    global point, pool, new_elements
+    global point, pool, new_elements, lives
+    caught = False
     for j in range(balls_number):
         r = pool[j][2]
         if (event_.pos[0] - pool[j][0]) ** 2 + (event_.pos[1] - pool[j][1]) ** 2 <= r ** 2:
             point += 1
             pool.pop(j)
             new_ball()
+            caught = True
     for j in range(len(new_elements)):
         r = new_elements[j][2]
         if (event_.pos[0] - new_elements[j][0]) ** 2 + (event_.pos[1] - new_elements[j][1]) ** 2 <= r ** 2:
@@ -163,6 +166,10 @@ def click(event_):
             new_elements.pop(j)
             new_element()
             point += special_score
+            caught = True
+
+    if not caught:
+        lives -= 1
 
 
 def point_version(point_):
@@ -205,7 +212,6 @@ for i in range(balls_number):
 pygame.display.update()
 clock = pygame.time.Clock()
 finished = False
-entered = False
 
 font = pygame.font.SysFont('Roboto', font_size)
 
@@ -218,7 +224,7 @@ while not finished:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             click(event)
-    if point > 10**10:
+    if point > 10**10 or lives == 0:
         finished = True
 
     if finished:
@@ -226,7 +232,7 @@ while not finished:
         print('Вы набрали', point, point_version(point) + '! Время:',
               round(time, 2), 'с')
 
-    text = font.render('SCORE: ' + str(point), False, RED)
+    text = font.render('LIVES: ' + str(lives) + ' SCORE: ' + str(point), False, RED)
     screen.blit(text, (WIDTH-text.get_width(), 0))
 
     draw_balls()
