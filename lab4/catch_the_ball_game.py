@@ -34,7 +34,9 @@ special_score = 10                          # кол-во очков за нов
 v_max = 3                                   # максимльная скорость шаров на 1 уровне
 font_size = 36                              # размер шрифта подсчета очков на экране
 name = ''
-lives = 10                                  # количество жизней
+LIVES = 10                                  # изначальное количество жизней
+lives = LIVES                               # количество жизней
+heart = True                                # отображение жизни в виде числа или сердец
 
 
 def new_ball():
@@ -216,7 +218,7 @@ pygame.display.update()
 clock = pygame.time.Clock()
 finished = False
 
-font = pygame.font.SysFont('Roboto', font_size)
+font = pygame.font.SysFont('arial', font_size)
 
 time = pygame.time.get_ticks()/1000                             # время начала игры
 
@@ -235,7 +237,10 @@ while not finished:
         print('Вы набрали', point, point_version(point) + '! Время:',
               round(time, 2), 'с')
 
-    text = font.render('LIVES: ' + str(lives) + ' SCORE: ' + str(point), False, RED)
+    if heart:
+        text = font.render('LIVES: ' + '♥'*lives + '  '*(LIVES-lives) + ' SCORE: ' + str(point), False, RED)
+    else:
+        text = font.render('LIVES: ' + str(lives) + ' SCORE: ' + str(point), False, RED)
     screen.blit(text, (WIDTH-text.get_width(), 0))
 
     draw_balls()
