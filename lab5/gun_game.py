@@ -38,6 +38,7 @@ class Ball:
         self.color = choice(GAME_COLORS)
         self.live = 30
         self.v = 0
+        self.dvy = 2
 
     def move(self):
         """Переместить мяч по прошествии единицы времени.
@@ -47,21 +48,19 @@ class Ball:
         и стен по краям окна (размер окна 800х600).
         """
         # FIXME
-        if abs(self.v) > 3:
-            self.x += self.vx
-            self.y -= self.vy
-            self.vy -= 2
+        self.x += self.vx
+        self.y -= self.vy
+        self.vy -= self.dvy
 
-            if self.x >= WIDTH or self.x <= 0:
-                self.vx = -0.5 * self.vx
-                self.x += self.vx*2
-            if self.y >= HEIGHT or self.y <= 0:
-                self.vy = -0.5 * self.vy
-                self.vy_max = self.vy
-                self.y -= self.vy*2
-        else:
-            self.vx = 0
-            self.vy = 0
+        if self.x >= WIDTH or self.x <= 0:
+            self.vx = -0.5 * self.vx
+            self.x += self.vx
+        if self.y >= HEIGHT or self.y <= 0:
+            self.vy = -0.5 * self.vy
+            self.y -= self.vy
+        self.v = (self.vx**2 + self.vy**2) ** 0.5
+        if self.v < 5:
+            self.y = HEIGHT
 
     def draw(self):
         pygame.draw.circle(
@@ -154,6 +153,7 @@ class Target:
 
     def new_target(self):
         """ Инициализация новой цели. """
+        self.live = 1
         self.x = randint(600, 780)
         self.y = randint(300, 550)
         self.r = randint(2, 50)
@@ -162,6 +162,7 @@ class Target:
     def hit(self, points=1):
         """Попадание шарика в цель."""
         self.points += points
+        self.live = 1
 
     def draw(self):
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.r)
@@ -202,11 +203,19 @@ while not finished:
     screen.blit(text, (40, 200))
 
     for b in balls:
-        b.move()
+        if b.v > 10:
+            b.move()
+        else:
+            b.y = HEIGHT
         if b.hittest(target) and target.live:
             target.live = 0
             target.hit()
             target.new_target()
+    k = 0
+    for b in balls:
+        if b.v < 10:
+            balls.pop(k)
+        k += 1
     gun.power_up()
 
 
