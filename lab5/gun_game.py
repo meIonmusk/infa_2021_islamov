@@ -61,6 +61,7 @@ class Ball:
         self.v = (self.vx**2 + self.vy**2) ** 0.5
         if self.v < 5:
             self.y = HEIGHT
+            self.vy = 0
 
     def draw(self):
         pygame.draw.circle(
@@ -143,10 +144,11 @@ class Gun:
             self.color = GREY
 
 
+RANGE_X = 400
+RANGE_Y = 200
 class Target:
     points = 0
 
-        # FIXME: don't work!!! How to call this functions when object is created?
     def __init__(self):
         self.live = 1
         self.new_target()
@@ -154,10 +156,14 @@ class Target:
     def new_target(self):
         """ Инициализация новой цели. """
         self.live = 1
-        self.x = randint(600, 780)
-        self.y = randint(300, 550)
+        self.x = randint(RANGE_X+50, WIDTH-100)
+        self.y = randint(RANGE_Y+50, HEIGHT-100)
         self.r = randint(2, 50)
         self.color = choice(GAME_COLORS)
+        self.vx = randint(-5, 5)
+        if self.vx == 0: self.vx = 1
+        self.vy = randint(-5, 5)
+        if self.vy == 0: self.vy = 1
 
     def hit(self, points=1):
         """Попадание шарика в цель."""
@@ -167,23 +173,47 @@ class Target:
     def draw(self):
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.r)
 
+    def move(self):
+        self.x += self.vx
+        self.y += self.vy
+
+    def bump_borders(self):
+        if self.x >= WIDTH-50-self.r or self.x <= RANGE_X+self.r:
+            self.vx = -self.vx
+            self.x += self.vx
+        if self.y >= HEIGHT-50-self.r or self.y <= RANGE_Y+self.r:
+            self.vy = -self.vy
+            self.y += self.vy
+
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 bullet = 0
 balls = []
 font_size = 20
-font = pygame.font.SysFont('arial', font_size)
+f = pygame.font.SysFont('Arial', font_size)
 
+MOVE_TARGET = False
 clock = pygame.time.Clock()
 gun = Gun(screen)
-target = Target()
-finished = False
+target_numbers = 4
+targets = []
+for num in range(target_numbers):
+    target = Target()
+    targets.append(target)
 
+for targ in targets:
+    targ.new_target()
+
+finished = False
 while not finished:
     screen.fill(WHITE)
     gun.draw()
-    target.draw()
+
+    for targ in targets:
+        targ.bump_borders()
+        targ.move()
+        targ.draw()
     for b in balls:
         b.draw()
     pygame.display.update()
@@ -199,7 +229,7 @@ while not finished:
         elif event.type == pygame.MOUSEMOTION:
             gun.targetting(event)
 
-    text = font.render('POINTS: ' + str(target.points), False, BLACK)
+    text = f.render('POINTS: ' + str(Target.points), False, BLACK)
     screen.blit(text, (40, 200))
 
     for b in balls:
@@ -207,10 +237,11 @@ while not finished:
             b.move()
         else:
             b.y = HEIGHT
-        if b.hittest(target) and target.live:
-            target.live = 0
-            target.hit()
-            target.new_target()
+        for targ in targets:
+            if b.hittest(targ) and targ.live:
+                targ.live = 0
+                targ.hit()
+                targ.new_target()
     k = 0
     for b in balls:
         if b.v < 10:
@@ -218,5 +249,5 @@ while not finished:
         k += 1
     gun.power_up()
 
-
+print(Target.points)
 pygame.quit()
