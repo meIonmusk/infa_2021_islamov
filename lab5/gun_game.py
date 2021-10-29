@@ -205,7 +205,6 @@ for targ in targets:
     targ.new_target()
 
 MOVE_TARGET = True
-
 finished = False
 while not finished:
     screen.fill(WHITE)
