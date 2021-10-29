@@ -21,7 +21,7 @@ HEIGHT = 600
 
 
 class Ball:
-    def __init__(self, screen: pygame.Surface, x=40, y=450):
+    def __init__(self, screen: pygame.Surface):
         """ Конструктор класса ball
 
         Args:
@@ -31,7 +31,7 @@ class Ball:
         global gun
         self.screen = screen
         self.x = gun.x + 100*math.cos(gun.an)
-        self.y = y + 100*math.sin(gun.an)
+        self.y = gun.y + 100*math.sin(gun.an)
         self.r = 10
         self.vx = 0
         self.vy = 0
@@ -91,8 +91,8 @@ class Gun:
         self.an = 1
         self.color = GREY
         self.x = 40
-        self.y = 450
-        self.v = 2
+        self.y = HEIGHT*3/4
+        self.v = 3
 
     def fire2_start(self, event):
         self.f2_on = 1
@@ -120,6 +120,8 @@ class Gun:
         if event:
             if event.pos[0] != self.x:
                 self.an = math.atan((event.pos[1] - self.y) / (event.pos[0] - self.x))
+                if (event.pos[0] - self.x) < 0:
+                    self.an += math.pi
         if self.f2_on:
             self.color = RED
         else:
@@ -132,7 +134,7 @@ class Gun:
         a = 7
         b = 20
         pygame.draw.polygon(screen, GREY, [(x - b, y), (x - b, y + b), (x + b, y + b), (x + b, y)])
-        pygame.draw.ellipse(screen, GREY, (x - 2 * b, y + b // 2, 4 * b, 2 * b))
+        pygame.draw.ellipse(screen, GREY, [x - 2 * b, y + b // 2, 4 * b, 2 * b])
         pygame.draw.polygon(screen, GREY, [
             (x, y),
             (x + 100 * math.cos(-self.an), y - 100 * math.sin(-self.an)),
