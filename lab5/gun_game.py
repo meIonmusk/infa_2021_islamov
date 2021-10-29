@@ -4,7 +4,7 @@ from random import randint
 import pygame
 
 
-FPS = 30
+FPS = 35
 
 RED = 0xFF0000
 BLUE = 0x0000FF
@@ -47,7 +47,6 @@ class Ball:
         self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
         и стен по краям окна (размер окна 800х600).
         """
-        # FIXME
         self.x += self.vx
         self.y -= self.vy
         self.vy -= self.dvy
@@ -79,7 +78,6 @@ class Ball:
         Returns:
             Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
         """
-        # FIXME
         if (self.x-obj.x)**2 + (self.y-obj.y)**2 <= (self.r+obj.r)**2:
             return True
         return False
@@ -146,6 +144,8 @@ class Gun:
 
 RANGE_X = 400
 RANGE_Y = 200
+
+
 class Target:
     points = 0
 
@@ -165,9 +165,9 @@ class Target:
         self.vy = randint(-5, 5)
         if self.vy == 0: self.vy = 1
 
-    def hit(self, points=1):
+    def hit(self, point=1):
         """Попадание шарика в цель."""
-        self.points += points
+        Target.points += point
         self.live = 1
 
     def draw(self):
@@ -190,10 +190,9 @@ pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 bullet = 0
 balls = []
-font_size = 20
+font_size = 36
 f = pygame.font.SysFont('Arial', font_size)
 
-MOVE_TARGET = False
 clock = pygame.time.Clock()
 gun = Gun(screen)
 target_numbers = 4
@@ -205,14 +204,16 @@ for num in range(target_numbers):
 for targ in targets:
     targ.new_target()
 
+MOVE_TARGET = True
+
 finished = False
 while not finished:
     screen.fill(WHITE)
     gun.draw()
-
     for targ in targets:
-        targ.bump_borders()
-        targ.move()
+        if MOVE_TARGET:
+            targ.bump_borders()
+            targ.move()
         targ.draw()
     for b in balls:
         b.draw()
