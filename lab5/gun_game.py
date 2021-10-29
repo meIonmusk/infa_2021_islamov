@@ -28,9 +28,10 @@ class Ball:
         x - начальное положение мяча по горизонтали
         y - начальное положение мяча по вертикали
         """
+        global gun
         self.screen = screen
-        self.x = x
-        self.y = y
+        self.x = gun.x + 100*math.cos(gun.an)
+        self.y = y + 100*math.sin(gun.an)
         self.r = 10
         self.vx = 0
         self.vy = 0
@@ -117,8 +118,8 @@ class Gun:
     def targetting(self, event):
         """Прицеливание. Зависит от положения мыши."""
         if event:
-            if event.pos[0] != 20:
-                self.an = math.atan((event.pos[1] - 450) / (event.pos[0] - 20))
+            if event.pos[0] != self.x:
+                self.an = math.atan((event.pos[1] - self.y) / (event.pos[0] - self.x))
         if self.f2_on:
             self.color = RED
         else:
@@ -148,9 +149,10 @@ class Gun:
         ])
 
     def move(self, keys):
-        if keys[pygame.K_LEFT]:
+        b = 40
+        if keys[pygame.K_LEFT] and self.x > b:
             self.x -= self.v
-        elif keys[pygame.K_RIGHT]:
+        elif keys[pygame.K_RIGHT] and self.x < WIDTH/2-b:
             self.x += self.v
 
     def power_up(self):
