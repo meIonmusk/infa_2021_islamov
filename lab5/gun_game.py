@@ -3,7 +3,6 @@ from random import choice
 from random import randint
 import pygame
 
-
 FPS = 35
 
 RED = 0xFF0000
@@ -57,7 +56,7 @@ class Ball:
         if self.y >= HEIGHT or self.y <= 0:
             self.vy = -0.5 * self.vy
             self.y -= self.vy
-        self.v = (self.vx**2 + self.vy**2) ** 0.5
+        self.v = (self.vx ** 2 + self.vy ** 2) ** 0.5
         if self.v < 5:
             self.y = HEIGHT
             self.vy = 0
@@ -78,7 +77,7 @@ class Ball:
         Returns:
             Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
         """
-        if (self.x-obj.x)**2 + (self.y-obj.y)**2 <= (self.r+obj.r)**2:
+        if (self.x - obj.x) ** 2 + (self.y - obj.y) ** 2 <= (self.r + obj.r) ** 2:
             return True
         return False
 
@@ -90,6 +89,9 @@ class Gun:
         self.f2_on = 0
         self.an = 1
         self.color = GREY
+        self.x = 40
+        self.y = 450
+        self.v = 2
 
     def fire2_start(self, event):
         self.f2_on = 1
@@ -104,10 +106,10 @@ class Gun:
         bullet += 1
         new_ball = Ball(self.screen)
         new_ball.r += 5
-        self.an = math.atan2((event.pos[1]-new_ball.y), (event.pos[0]-new_ball.x))
+        self.an = math.atan2((event.pos[1] - new_ball.y), (event.pos[0] - new_ball.x))
         new_ball.vx = self.f2_power * math.cos(self.an)
         new_ball.vy = - self.f2_power * math.sin(self.an)
-        new_ball.v = (new_ball.vy**2 + new_ball.vx**2) ** 0.5
+        new_ball.v = (new_ball.vy ** 2 + new_ball.vx ** 2) ** 0.5
         balls.append(new_ball)
         self.f2_on = 0
         self.f2_power = 10
@@ -116,22 +118,40 @@ class Gun:
         """Прицеливание. Зависит от положения мыши."""
         if event:
             if event.pos[0] != 20:
-                self.an = math.atan((event.pos[1]-450) / (event.pos[0]-20))
+                self.an = math.atan((event.pos[1] - 450) / (event.pos[0] - 20))
         if self.f2_on:
             self.color = RED
         else:
             self.color = GREY
 
-    def draw(self, x=40, y=450):
+    def draw(self):
         global screen
+        x = self.x
+        y = self.y
         a = 7
+        b = 20
+        pygame.draw.polygon(screen, GREY, [(x - b, y), (x - b, y + b), (x + b, y + b), (x + b, y)])
+        pygame.draw.ellipse(screen, GREY, (x - 2 * b, y + b // 2, 4 * b, 2 * b))
+        pygame.draw.polygon(screen, GREY, [
+            (x, y),
+            (x + 100 * math.cos(-self.an), y - 100 * math.sin(-self.an)),
+            (x + 100 * math.cos(-self.an) - a * math.sin(-self.an),
+             y - 100 * math.sin(-self.an) - a * math.cos(-self.an)),
+            (x - a * math.sin(-self.an), y - a * math.cos(-self.an))
+        ])
         pygame.draw.polygon(screen, self.color, [
             (x, y),
-            (x + self.f2_power*math.cos(-self.an), y - self.f2_power*math.sin(-self.an)),
-            (x + self.f2_power*math.cos(-self.an) - a*math.sin(-self.an),
-             y - self.f2_power*math.sin(-self.an) - a*math.cos(-self.an)),
-            (x-a*math.sin(-self.an), y-a*math.cos(-self.an))
+            (x + self.f2_power * math.cos(-self.an), y - self.f2_power * math.sin(-self.an)),
+            (x + self.f2_power * math.cos(-self.an) - a * math.sin(-self.an),
+             y - self.f2_power * math.sin(-self.an) - a * math.cos(-self.an)),
+            (x - a * math.sin(-self.an), y - a * math.cos(-self.an))
         ])
+
+    def move(self, keys):
+        if keys[pygame.K_LEFT]:
+            self.x -= self.v
+        elif keys[pygame.K_RIGHT]:
+            self.x += self.v
 
     def power_up(self):
         if self.f2_on:
@@ -156,8 +176,8 @@ class Target:
     def new_target(self):
         """ Инициализация новой цели. """
         self.live = 1
-        self.x = randint(RANGE_X+50, WIDTH-100)
-        self.y = randint(RANGE_Y+50, HEIGHT-100)
+        self.x = randint(RANGE_X + 50, WIDTH - 100)
+        self.y = randint(RANGE_Y + 50, HEIGHT - 100)
         self.r = randint(2, 50)
         self.color = choice(GAME_COLORS)
         self.vx = randint(-5, 5)
@@ -178,10 +198,10 @@ class Target:
         self.y += self.vy
 
     def bump_borders(self):
-        if self.x >= WIDTH-50-self.r or self.x <= RANGE_X+self.r:
+        if self.x >= WIDTH - 50 - self.r or self.x <= RANGE_X + self.r:
             self.vx = -self.vx
             self.x += self.vx
-        if self.y >= HEIGHT-50-self.r or self.y <= RANGE_Y+self.r:
+        if self.y >= HEIGHT - 50 - self.r or self.y <= RANGE_Y + self.r:
             self.vy = -self.vy
             self.y += self.vy
 
@@ -228,6 +248,9 @@ while not finished:
             gun.fire2_end(event)
         elif event.type == pygame.MOUSEMOTION:
             gun.targetting(event)
+
+    keys = pygame.key.get_pressed()
+    gun.move(keys)
 
     text = f.render('POINTS: ' + str(Target.points), False, BLACK)
     screen.blit(text, (40, 200))
