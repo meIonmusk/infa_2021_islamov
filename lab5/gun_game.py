@@ -179,51 +179,35 @@ class Target:
 
     def __init__(self):
         self.live = 1
-        self.new_target()
-        self.new_square()
+        self.x = 0
+        self.y = 0
+        self.vx = 0
+        self.vy = 0
+        self.r = 0
+        self.color = (choice(GAME_COLORS))
 
     def new_target(self):
         """ Инициализация новой цели. """
-        self.figure = "circle"
+
         self.live = 1
         self.x = randint(RANGE_X + 50, WIDTH - 100)
         self.y = randint(RANGE_Y + 50, HEIGHT - 100)
-        self.r = randint(2, 50)
+        self.r = randint(2, 30)
         self.color = choice(GAME_COLORS)
         self.vx = randint(-5, 5)
-        if self.vx == 0: self.vx = 1
+        if self.vx == 0:
+            self.vx = 1
         self.vy = randint(-5, 5)
-        if self.vy == 0: self.vy = 1
-
-    def new_square(self):
-        """ Инициализация нового квадрата. """
-        self.figure = 'square'
-        self.live = 1
-        self.x = randint(RANGE_X + 50, WIDTH - 100)
-        self.y = randint(RANGE_Y + 50, HEIGHT - 100)
-        self.r = randint(5, 25)
-
-    def hit(self, point=1):
-        """Попадание шарика в цель."""
-        if self.figure == 'circle':
-            Target.points += point
-        elif self.figure == 'square':
-            Target.points += 5*point
-        self.live = 1
-
-    def draw(self):
-        pygame.draw.circle(screen, self.color, (self.x, self.y), self.r)
-
-    def draw_square(self):
-        pygame.draw.rect(screen, choice(GAME_COLORS), (self.x-self.r, self.y-self.r, self.r, self.r))
+        if self.vy == 0:
+            self.vy = 1
 
     def move(self):
-        self.x += self.vx
-        self.y += self.vy
+        pass
 
-    def move_square(self):
-        self.x += randint(-10, 10)
-        self.y += randint(-10, 10)
+    def hit(self, point):
+        """Попадание шарика в цель."""
+        Target.points += point
+        self.live = 1
 
     def bump_borders(self):
         if self.x >= WIDTH - 50 - self.r or self.x <= RANGE_X + self.r:
@@ -232,6 +216,41 @@ class Target:
         if self.y >= HEIGHT - 50 - self.r or self.y <= RANGE_Y + self.r:
             self.vy = -self.vy
             self.y += self.vy
+
+    def draw(self):
+        pass
+
+
+class Circle(Target):
+    point = 1
+
+    def __init__(self):
+        super(Circle, self).__init__()
+
+    def draw(self):
+        pygame.draw.circle(screen, self.color, (self.x, self.y), self.r)
+
+    def move(self):
+        self.x += self.vx
+        self.y += self.vy
+
+
+class Square(Target):
+    point = 5
+
+    def __init__(self):
+        super(Square, self).__init__()
+
+    def draw(self):
+        self.color = choice(GAME_COLORS)
+        pygame.draw.rect(screen, self.color, (self.x-self.r, self.y-self.r, self.r, self.r))
+
+    def move(self):
+        self.vx = randint(-10, 10)
+        self.vy = randint(-10, 10)
+
+        self.x += self.vx
+        self.y += self.vy
 
 
 pygame.init()
@@ -247,15 +266,13 @@ target_numbers = 4
 targets = []
 squares = []
 for num in range(target_numbers):
-    target = Target()
-    targets.append(target)
-    square = Target()
-    squares.append(square)
+    circle = Circle()
+    targets.append(circle)
+    square = Square()
+    targets.append(square)
 
 for targ in targets:
     targ.new_target()
-for square in squares:
-    square.draw_square()
 
 MOVE_TARGET = True
 finished = False
@@ -270,10 +287,6 @@ while not finished:
             targ.bump_borders()
             targ.move()
         targ.draw()
-    for square in squares:
-        square.bump_borders()
-        square.move_square()
-        square.draw_square()
 
     for b in balls:
         b.draw()
@@ -301,13 +314,9 @@ while not finished:
         for targ in targets:
             if b.hittest(targ) and targ.live:
                 targ.live = 0
-                targ.hit()
+                targ.hit(targ.point)
                 targ.new_target()
-        for square in squares:
-            if b.hittest(square) and square.live:
-                square.live = 0
-                square.hit()
-                square.new_square()
+
     k = 0
     for b in balls:
         if b.v < 10:
