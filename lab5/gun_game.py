@@ -156,6 +156,10 @@ class Gun:
             self.x -= self.v
         elif keys[pygame.K_RIGHT] and self.x < WIDTH/2-b:
             self.x += self.v
+        elif keys[pygame.K_DOWN] and self.y < HEIGHT-2*b:
+            self.y += self.v
+        elif keys[pygame.K_UP] and self.y > 2*b:
+            self.y -= self.v
 
     def power_up(self):
         if self.f2_on:
@@ -218,8 +222,8 @@ class Target:
         self.y += self.vy
 
     def move_square(self):
-        self.x += randint(-5, 5)
-        self.y += randint(-5, 5)
+        self.x += randint(-10, 10)
+        self.y += randint(-10, 10)
 
     def bump_borders(self):
         if self.x >= WIDTH - 50 - self.r or self.x <= RANGE_X + self.r:
@@ -235,7 +239,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 bullet = 0
 balls = []
 font_size = 36
-f = pygame.font.SysFont('Arial', font_size)
+f = pygame.font.SysFont('impact', font_size)
 
 clock = pygame.time.Clock()
 gun = Gun(screen)
