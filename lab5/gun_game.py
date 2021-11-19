@@ -20,9 +20,9 @@ WIDTH = 800
 HEIGHT = 600
 
 
-class Ball:
+class Shell:
     def __init__(self, screen: pygame.Surface):
-        """ Конструктор класса ball
+        """ Конструктор класса Shell
 
         Args:
         x - начальное положение мяча по горизонтали
@@ -30,8 +30,8 @@ class Ball:
         """
         global gun
         self.screen = screen
-        self.x = gun.x + 100*math.cos(gun.an)
-        self.y = gun.y + 100*math.sin(gun.an)
+        self.x = gun.x + 100 * math.cos(gun.an)
+        self.y = gun.y + 100 * math.sin(gun.an)
         self.r = 10
         self.vx = 0
         self.vy = 0
@@ -39,6 +39,33 @@ class Ball:
         self.live = 30
         self.v = 0
         self.dvy = 2
+
+    def move(self):
+        pass
+
+    def draw(self):
+        pygame.draw.circle(
+            self.screen,
+            self.color,
+            (self.x, self.y),
+            self.r)
+
+    def hittest(self, obj):
+        """Функция проверяет сталкивалкивается ли данный обьект с целью, описываемой в обьекте obj.
+
+        Args:
+            obj: Обьект, с которым проверяется столкновение.
+        Returns:
+            Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
+        """
+        if (self.x - obj.x) ** 2 + (self.y - obj.y) ** 2 <= (self.r + obj.r) ** 2:
+            return True
+        return False
+
+
+class Ball(Shell):
+    def __init__(self, screen: pygame.Surface):
+        super(Ball, self).__init__(screen)
 
     def move(self):
         """Переместить мяч по прошествии единицы времени.
@@ -62,25 +89,14 @@ class Ball:
             self.y = HEIGHT
             self.vy = 0
 
-    def draw(self):
-        pygame.draw.circle(
-            self.screen,
-            self.color,
-            (self.x, self.y),
-            self.r
-        )
 
-    def hittest(self, obj):
-        """Функция проверяет сталкивалкивается ли данный обьект с целью, описываемой в обьекте obj.
+class Bomb(Shell):
+    def __init__(self, screen: pygame.Surface):
+        super(Bomb, self).__init__(screen)
 
-        Args:
-            obj: Обьект, с которым проверяется столкновение.
-        Returns:
-            Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
-        """
-        if (self.x - obj.x) ** 2 + (self.y - obj.y) ** 2 <= (self.r + obj.r) ** 2:
-            return True
-        return False
+    def move(self):
+        self.x += self.vx
+        self.y -= self.vy
 
 
 class Gun:
@@ -91,7 +107,7 @@ class Gun:
         self.an = 1
         self.color = GREY
         self.x = 40
-        self.y = HEIGHT*3/4
+        self.y = HEIGHT * 3 / 4
         self.v = 3
 
     def fire2_start(self, event):
@@ -105,7 +121,10 @@ class Gun:
         """
         global balls, bullet
         bullet += 1
-        new_ball = Ball(self.screen)
+        if bombs:
+            new_ball = Bomb(self.screen)
+        else:
+            new_ball = Ball(self.screen)
         new_ball.r += 5
         self.an = math.atan2((event.pos[1] - new_ball.y), (event.pos[0] - new_ball.x))
         new_ball.vx = self.f2_power * math.cos(self.an)
@@ -154,11 +173,11 @@ class Gun:
         b = 40
         if keys[pygame.K_LEFT] and self.x > b:
             self.x -= self.v
-        elif keys[pygame.K_RIGHT] and self.x < WIDTH/2-b:
+        elif keys[pygame.K_RIGHT] and self.x < WIDTH / 2 - b:
             self.x += self.v
-        elif keys[pygame.K_DOWN] and self.y < HEIGHT-2*b:
+        elif keys[pygame.K_DOWN] and self.y < HEIGHT - 2 * b:
             self.y += self.v
-        elif keys[pygame.K_UP] and self.y > 2*b:
+        elif keys[pygame.K_UP] and self.y > 2 * b:
             self.y -= self.v
 
     def power_up(self):
@@ -243,7 +262,7 @@ class Square(Target):
 
     def draw(self):
         self.color = choice(GAME_COLORS)
-        pygame.draw.rect(screen, self.color, (self.x-self.r, self.y-self.r, self.r, self.r))
+        pygame.draw.rect(screen, self.color, (self.x - self.r, self.y - self.r, self.r, self.r))
 
     def move(self):
         self.vx = randint(-10, 10)
@@ -276,6 +295,7 @@ for targ in targets:
 
 MOVE_TARGET = True
 finished = False
+bombs = False
 while not finished:
     screen.fill(WHITE)
     text = f.render('POINTS: ' + str(Target.points), False, BLACK)
@@ -302,6 +322,12 @@ while not finished:
             gun.fire2_end(event)
         elif event.type == pygame.MOUSEMOTION:
             gun.targetting(event)
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_c:
+                if not bombs:
+                    bombs = True
+                else:
+                    bombs = False
 
     keys = pygame.key.get_pressed()
     gun.move(keys)
