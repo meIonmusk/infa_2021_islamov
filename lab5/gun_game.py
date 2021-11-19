@@ -176,9 +176,11 @@ class Target:
     def __init__(self):
         self.live = 1
         self.new_target()
+        self.new_square()
 
     def new_target(self):
         """ Инициализация новой цели. """
+        self.figure = "circle"
         self.live = 1
         self.x = randint(RANGE_X + 50, WIDTH - 100)
         self.y = randint(RANGE_Y + 50, HEIGHT - 100)
@@ -189,17 +191,35 @@ class Target:
         self.vy = randint(-5, 5)
         if self.vy == 0: self.vy = 1
 
+    def new_square(self):
+        """ Инициализация нового квадрата. """
+        self.figure = 'square'
+        self.live = 1
+        self.x = randint(RANGE_X + 50, WIDTH - 100)
+        self.y = randint(RANGE_Y + 50, HEIGHT - 100)
+        self.r = randint(5, 25)
+
     def hit(self, point=1):
         """Попадание шарика в цель."""
-        Target.points += point
+        if self.figure == 'circle':
+            Target.points += point
+        elif self.figure == 'square':
+            Target.points += 5*point
         self.live = 1
 
     def draw(self):
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.r)
 
+    def draw_square(self):
+        pygame.draw.rect(screen, choice(GAME_COLORS), (self.x-self.r, self.y-self.r, self.r, self.r))
+
     def move(self):
         self.x += self.vx
         self.y += self.vy
+
+    def move_square(self):
+        self.x += randint(-5, 5)
+        self.y += randint(-5, 5)
 
     def bump_borders(self):
         if self.x >= WIDTH - 50 - self.r or self.x <= RANGE_X + self.r:
@@ -221,23 +241,36 @@ clock = pygame.time.Clock()
 gun = Gun(screen)
 target_numbers = 4
 targets = []
+squares = []
 for num in range(target_numbers):
     target = Target()
     targets.append(target)
+    square = Target()
+    squares.append(square)
 
 for targ in targets:
     targ.new_target()
+for square in squares:
+    square.draw_square()
 
 MOVE_TARGET = True
 finished = False
 while not finished:
     screen.fill(WHITE)
+    text = f.render('POINTS: ' + str(Target.points), False, BLACK)
+    screen.blit(text, (40, 200))
     gun.draw()
+    i = 0
     for targ in targets:
         if MOVE_TARGET:
             targ.bump_borders()
             targ.move()
         targ.draw()
+    for square in squares:
+        square.bump_borders()
+        square.move_square()
+        square.draw_square()
+
     for b in balls:
         b.draw()
     pygame.display.update()
@@ -256,9 +289,6 @@ while not finished:
     keys = pygame.key.get_pressed()
     gun.move(keys)
 
-    text = f.render('POINTS: ' + str(Target.points), False, BLACK)
-    screen.blit(text, (40, 200))
-
     for b in balls:
         if b.v > 10:
             b.move()
@@ -269,6 +299,11 @@ while not finished:
                 targ.live = 0
                 targ.hit()
                 targ.new_target()
+        for square in squares:
+            if b.hittest(square) and square.live:
+                square.live = 0
+                square.hit()
+                square.new_square()
     k = 0
     for b in balls:
         if b.v < 10:
@@ -276,5 +311,5 @@ while not finished:
         k += 1
     gun.power_up()
 
-print(Target.points)
+print('Your score:', Target.points)
 pygame.quit()
